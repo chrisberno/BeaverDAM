@@ -105,11 +105,13 @@ SPF Record:
 - **Credentials:** [To be added]
 
 ### GitHub (Code Repository)
-- **Status:** Not yet created
-- **Repository:** TBD (BeaverDAM or beaverdam-platform)
-- **Organization:** TBD (personal account or BeaverDAM org)
+- **Status:** ✅ Active
+- **Repository:** https://github.com/chrisberno/BeaverDAM
+- **Organization:** Personal account (chrisberno)
 - **Purpose:** Source code, version control, CI/CD
-- **Credentials:** [To be added]
+- **Visibility:** Public
+- **Credentials:** GitHub account (chris@chrisberno.dev)
+- **HeadVroom:** Linked in "🦫 Development" graph
 
 ---
 
@@ -177,7 +179,8 @@ SPF Record:
 ### Technical Documentation
 - **Tech Spec:** `/notes/beaverdam-technical-specifications.md`
 - **P.A.C. Doc:** `/notes/PAC-permissions-assets-credentials.md` (this file)
-- **Repository:** [GitHub URL to be added]
+- **Repository:** https://github.com/chrisberno/BeaverDAM
+- **HeadVroom Graph:** "🦫 Development" (linked to repo)
 
 ### Design Assets
 - **Logo:** [To be created]
