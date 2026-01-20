@@ -1,0 +1,26 @@
+{
+  "name": "beaverdam-server",
+  "version": "0.1.0",
+  "description": "BeaverDAM MCP Server - Exposes Directus DAM assets to AI agents",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "tsx src/test-connection.ts"
+  },
+  "keywords": ["mcp", "directus", "dam", "beaverdam"],
+  "author": "BeaverDAM",
+  "license": "MIT",
+  "dependencies": {
+    "@directus/sdk": "^21.0.0",
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
