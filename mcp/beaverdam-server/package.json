@@ -1,18 +1,26 @@
 {
-  "name": "beaverdam-server",
-  "version": "0.1.0",
+  "name": "@thebeaverdam/mcp",
+  "version": "1.1.0",
   "description": "BeaverDAM MCP Server - Exposes Directus DAM assets to AI agents",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "beaverdam-mcp": "./dist/index.js"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "test": "tsx src/test-connection.ts"
   },
-  "keywords": ["mcp", "directus", "dam", "beaverdam"],
-  "author": "BeaverDAM",
+  "keywords": ["mcp", "directus", "dam", "beaverdam", "model-context-protocol"],
+  "author": "Christopher Berno <chris@chrisberno.dev>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chrisberno/beaverdam.git"
+  },
+  "homepage": "https://beaverdam.dev",
   "dependencies": {
     "@directus/sdk": "^21.0.0",
     "@modelcontextprotocol/sdk": "^1.25.2",

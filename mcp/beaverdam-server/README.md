@@ -4,9 +4,14 @@ MCP (Model Context Protocol) server that exposes BeaverDAM (Directus) assets to 
 
 ## Features
 
+### Read Tools
 - **search_assets** - Search for assets by query (searches filename, title, description)
 - **get_asset_url** - Get the full URL for a specific asset by ID
 - **list_assets** - List all assets with pagination
+
+### Write Tools (S5c)
+- **register_asset** - Register an external URL (e.g., S3) as a managed BeaverDAM asset
+- **log_access** - Log asset access events for analytics and usage tracking
 
 ## Setup
 
@@ -116,6 +121,35 @@ User: "List all assets in BeaverDAM"
 AI: [Uses mcp__beaverdam__list_assets tool]
     Returns paginated list of assets
 ```
+
+### Register External Asset (S5c)
+
+```
+User: "Register this S3 file in BeaverDAM: https://bucket.s3.amazonaws.com/file.mp3"
+AI: [Uses mcp__beaverdam__register_asset tool]
+    Imports file and creates managed asset record
+    Returns asset_id and access_url
+```
+
+Parameters:
+- `url` (required): External URL to register
+- `title`: Title for the asset
+- `description`: Description
+- `metadata`: Custom metadata object (source, project_id, owner_email, etc.)
+
+### Log Asset Access (S5c)
+
+```
+User: "Log that connie.plus played asset abc-123"
+AI: [Uses mcp__beaverdam__log_access tool]
+    Creates access log entry for analytics
+```
+
+Parameters:
+- `asset_id` (required): BeaverDAM asset ID
+- `consumer` (required): Consuming app (e.g., "connie.plus")
+- `action`: Action performed (default: "access")
+- `metadata`: Additional context
 
 ## Development
 
