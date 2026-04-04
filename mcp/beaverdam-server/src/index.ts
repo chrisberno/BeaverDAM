@@ -8,7 +8,7 @@ import {
   ErrorCode,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import { createDirectus, rest, staticToken, readFiles, readFile, importFile, createItems, updateFile } from '@directus/sdk';
+import { createDirectus, rest, staticToken, readFiles, readFile, readItems, importFile, createItems, updateFile } from '@directus/sdk';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -30,7 +30,7 @@ const directus = createDirectus(DIRECTUS_URL)
 const server = new Server(
   {
     name: 'beaverdam',
-    version: '0.1.0',
+    version: '1.2.0',
   },
   {
     capabilities: {
@@ -45,14 +45,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
+        name: 'list_tenants',
+        description: 'List all tenants (project namespaces) in BeaverDAM',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
+      {
         name: 'search_assets',
-        description: 'Search for assets in BeaverDAM by query. Searches across filename, title, and description.',
+        description: 'Search for assets in BeaverDAM by query. Searches across filename, title, and description. Optionally filter by tenant.',
         inputSchema: {
           type: 'object',
           properties: {
             query: {
               type: 'string',
               description: 'Search query (searches filename, title, description)',
+            },
+            tenant: {
+              type: 'string',
+              description: 'Filter by tenant slug (e.g., "connie", "headvroom", "onreb")',
             },
             limit: {
               type: 'number',
@@ -84,10 +96,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: 'list_assets',
-        description: 'List all assets in BeaverDAM with optional pagination',
+        description: 'List all assets in BeaverDAM with optional pagination and tenant filtering',
         inputSchema: {
           type: 'object',
           properties: {
+            tenant: {
+              type: 'string',
+              description: 'Filter by tenant slug (e.g., "connie", "headvroom", "onreb")',
+            },
             limit: {
               type: 'number',
               description: 'Number of assets to return (default: 25)',
@@ -110,6 +126,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             url: {
               type: 'string',
               description: 'The external URL of the asset to register (e.g., S3 URL)',
+            },
+            tenant: {
+              type: 'string',
+              description: 'Tenant slug to assign the asset to (e.g., "connie", "onreb")',
             },
             title: {
               type: 'string',
@@ -158,18 +178,90 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   };
 });
 
+// Helper: resolve tenant slug to UUID
+async function resolveTenantId(slug: string): Promise<string> {
+  const tenants = await directus.request(
+    readItems('tenants', {
+      filter: { slug: { _eq: slug } },
+      limit: 1,
+    })
+  );
+  if (!tenants.length) {
+    throw new McpError(ErrorCode.InvalidParams, `Tenant "${slug}" not found`);
+  }
+  return (tenants[0] as any).id;
+}
+
+// Helper: format asset with tenant info
+function formatAsset(file: any) {
+  const tenant = file.tenant_id && typeof file.tenant_id === 'object'
+    ? { name: file.tenant_id.name, slug: file.tenant_id.slug }
+    : null;
+  return {
+    id: file.id,
+    filename: file.filename_download,
+    title: file.title,
+    type: file.type,
+    tenant,
+    url: `${DIRECTUS_URL}/assets/${file.id}`,
+    downloadUrl: `${DIRECTUS_URL}/assets/${file.id}?download`,
+    size: file.filesize,
+    width: file.width,
+    height: file.height,
+    uploadedOn: file.uploaded_on,
+    description: file.description,
+    tags: file.tags,
+  };
+}
+
 // Handle tool calls
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
   try {
     switch (name) {
+      case 'list_tenants': {
+        const tenants = await directus.request(
+          readItems('tenants', { sort: ['name'] })
+        );
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify(
+                {
+                  total: tenants.length,
+                  tenants: tenants.map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                    slug: t.slug,
+                    status: t.status,
+                    description: t.description,
+                  })),
+                },
+                null,
+                2
+              ),
+            },
+          ],
+        };
+      }
+
       case 'search_assets': {
         const query = args?.query as string;
+        const tenant = args?.tenant as string;
         const limit = (args?.limit as number) || 10;
 
         if (!query) {
           throw new McpError(ErrorCode.InvalidParams, 'query parameter is required');
+        }
+
+        // Build filter for tenant
+        const filter: any = {};
+        if (tenant) {
+          const tenantId = await resolveTenantId(tenant);
+          filter.tenant_id = { _eq: tenantId };
         }
 
         // Search across multiple fields
@@ -177,6 +269,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           readFiles({
             limit,
             search: query,
+            filter: Object.keys(filter).length > 0 ? filter : undefined,
+            fields: ['*', { tenant_id: ['name', 'slug'] }],
           })
         );
 
@@ -187,21 +281,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               text: JSON.stringify(
                 {
                   query,
+                  tenant: tenant || 'all',
                   count: files.length,
-                  assets: files.map((file: any) => ({
-                    id: file.id,
-                    filename: file.filename_download,
-                    title: file.title,
-                    type: file.type,
-                    url: `${DIRECTUS_URL}/assets/${file.id}`,
-                    downloadUrl: `${DIRECTUS_URL}/assets/${file.id}?download`,
-                    size: file.filesize,
-                    width: file.width,
-                    height: file.height,
-                    uploadedOn: file.uploaded_on,
-                    description: file.description,
-                    tags: file.tags,
-                  })),
+                  assets: files.map(formatAsset),
                 },
                 null,
                 2
@@ -219,11 +301,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           throw new McpError(ErrorCode.InvalidParams, 'assetId parameter is required');
         }
 
-        // Fetch asset details
-        const file = await directus.request(readFile(assetId));
+        // Fetch asset details with tenant info
+        const file = await directus.request(readFile(assetId, {
+          fields: ['*', { tenant_id: ['name', 'slug'] }],
+        }));
 
         const baseUrl = `${DIRECTUS_URL}/assets/${file.id}`;
         const url = download ? `${baseUrl}?download` : baseUrl;
+        const tenant = (file as any).tenant_id && typeof (file as any).tenant_id === 'object'
+          ? { name: (file as any).tenant_id.name, slug: (file as any).tenant_id.slug }
+          : null;
 
         return {
           content: [
@@ -235,6 +322,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   filename: file.filename_download,
                   title: file.title,
                   type: file.type,
+                  tenant,
                   url,
                   downloadUrl: `${baseUrl}?download`,
                   previewUrl: baseUrl,
@@ -255,13 +343,23 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'list_assets': {
+        const tenant = args?.tenant as string;
         const limit = (args?.limit as number) || 25;
         const offset = (args?.offset as number) || 0;
+
+        // Build filter for tenant
+        const filter: any = {};
+        if (tenant) {
+          const tenantId = await resolveTenantId(tenant);
+          filter.tenant_id = { _eq: tenantId };
+        }
 
         const files = await directus.request(
           readFiles({
             limit,
             offset,
+            filter: Object.keys(filter).length > 0 ? filter : undefined,
+            fields: ['*', { tenant_id: ['name', 'slug'] }],
           })
         );
 
@@ -274,15 +372,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   total: files.length,
                   offset,
                   limit,
-                  assets: files.map((file: any) => ({
-                    id: file.id,
-                    filename: file.filename_download,
-                    title: file.title,
-                    type: file.type,
-                    url: `${DIRECTUS_URL}/assets/${file.id}`,
-                    size: file.filesize,
-                    uploadedOn: file.uploaded_on,
-                  })),
+                  tenant: tenant || 'all',
+                  assets: files.map(formatAsset),
                 },
                 null,
                 2
@@ -294,6 +385,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case 'register_asset': {
         const url = args?.url as string;
+        const tenant = args?.tenant as string;
         const title = args?.title as string;
         const description = args?.description as string;
         const metadata = args?.metadata as Record<string, any>;
@@ -311,13 +403,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           importFile(url, Object.keys(fileData).length > 0 ? fileData : undefined)
         );
 
-        // If metadata provided, update the file with it
-        if (metadata && importedFile.id) {
-          await directus.request(
-            updateFile(importedFile.id, {
-              metadata: metadata,
-            })
-          );
+        // Update with tenant and/or metadata
+        const updateData: Record<string, any> = {};
+        if (tenant) {
+          updateData.tenant_id = await resolveTenantId(tenant);
+        }
+        if (metadata) {
+          updateData.metadata = metadata;
+        }
+        if (Object.keys(updateData).length > 0 && importedFile.id) {
+          await directus.request(updateFile(importedFile.id, updateData));
         }
 
         return {
@@ -331,6 +426,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                   filename: importedFile.filename_download,
                   title: importedFile.title || title,
                   type: importedFile.type,
+                  tenant: tenant || null,
                   access_url: `${DIRECTUS_URL}/assets/${importedFile.id}`,
                   download_url: `${DIRECTUS_URL}/assets/${importedFile.id}?download`,
                   size: importedFile.filesize,
