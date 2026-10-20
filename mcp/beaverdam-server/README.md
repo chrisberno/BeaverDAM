@@ -26,7 +26,7 @@ npm install
 Create a `.env` file:
 
 ```bash
-DIRECTUS_URL=https://beaverdam.fly.dev
+DIRECTUS_URL=https://dam.beaverdam.cc
 DIRECTUS_TOKEN=your_mcp_service_token_here
 ```
 
@@ -63,7 +63,7 @@ Add this to your Claude Code MCP servers configuration:
         "/Users/christopherj/projects/BeaverDAM/mcp/beaverdam-server/dist/index.js"
       ],
       "env": {
-        "DIRECTUS_URL": "https://beaverdam.fly.dev",
+        "DIRECTUS_URL": "https://dam.beaverdam.cc",
         "DIRECTUS_TOKEN": "your_token_here"
       }
     }
@@ -86,7 +86,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
         "/Users/christopherj/projects/BeaverDAM/mcp/beaverdam-server/dist/index.js"
       ],
       "env": {
-        "DIRECTUS_URL": "https://beaverdam.fly.dev",
+        "DIRECTUS_URL": "https://dam.beaverdam.cc",
         "DIRECTUS_TOKEN": "your_token_here"
       }
     }

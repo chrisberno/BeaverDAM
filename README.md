@@ -21,7 +21,7 @@ Directus · Fly.io · Tigris (S3-compatible object storage) · PostgreSQL · Typ
 
 ## Where it runs
 
-- **Admin:** https://beaverdam.fly.dev/admin
+- **Admin:** https://dam.beaverdam.cc/admin
 - **Domain:** beaverdam.cc
 - **Storage:** Tigris (`beaverdam-assets` bucket)
 

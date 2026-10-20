@@ -6,7 +6,7 @@
         "/Users/christopherj/projects/BeaverDAM/mcp/beaverdam-server/dist/index.js"
       ],
       "env": {
-        "DIRECTUS_URL": "https://beaverdam.fly.dev",
+        "DIRECTUS_URL": "https://dam.beaverdam.cc",
         "DIRECTUS_TOKEN": "Ew0tb-EvseoLDK3fkreeamxQZlABR8ez"
       }
     }

@@ -13,7 +13,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const DIRECTUS_URL = process.env.DIRECTUS_URL || 'https://beaverdam.fly.dev';
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'https://dam.beaverdam.cc';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN;
 
 if (!DIRECTUS_TOKEN) {

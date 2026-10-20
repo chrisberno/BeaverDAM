@@ -2,7 +2,7 @@
 
 **Last Updated:** January 19, 2026
 **Status:** Production Deployed
-**Deployed URL:** https://beaverdam.fly.dev/admin
+**Deployed URL:** https://dam.beaverdam.cc/admin
 
 ---
 
@@ -109,7 +109,7 @@ flyctl deploy
 - ✅ 2 machines running (auto-scaling)
 - ✅ Database initialized and migrated
 - ✅ Admin user created
-- ✅ Accessible at https://beaverdam.fly.dev/admin
+- ✅ Accessible at https://dam.beaverdam.cc/admin
 
 ---
 
@@ -231,7 +231,7 @@ flyctl secrets set PUBLIC_URL="https://dam.beaverdam.cc" --app beaverdam
 ## 🔐 Access Credentials
 
 **Directus Admin:**
-- URL: https://beaverdam.fly.dev/admin
+- URL: https://dam.beaverdam.cc/admin
 - Email: admin@beaverdam.cc
 - Password: BeaverDAM2026!
 

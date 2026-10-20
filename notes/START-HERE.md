@@ -134,7 +134,7 @@ BeaverDAM/
 ## 🔑 Key Resources
 
 ### **Production Environment**
-- **Directus Admin:** https://beaverdam.fly.dev/admin
+- **Directus Admin:** https://dam.beaverdam.cc/admin
 - **Login:** admin@beaverdam.cc / BeaverDAM2026!
 - **Database:** PostgreSQL on Fly.io (beaverdam-db)
 - **Storage:** Tigris (beaverdam-assets bucket)
